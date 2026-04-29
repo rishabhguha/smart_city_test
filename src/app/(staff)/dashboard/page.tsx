@@ -2,7 +2,6 @@ export const dynamic = "force-dynamic";
 
 import { db } from "@/db";
 import { serviceRequests, categories, departments } from "@/db/schema";
-import { eq } from "drizzle-orm";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,17 +10,10 @@ import { STATUS_LABELS, STATUS_COLORS, PRIORITY_COLORS, PRIORITY_LABELS } from "
 import { getDbUser } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import type { Status } from "@/db/schema";
-import { DashboardFilters } from "./DashboardFilters";
 
-interface Props {
-  searchParams: Promise<{ status?: string; departmentId?: string }>;
-}
-
-export default async function DashboardPage({ searchParams }: Props) {
+export default async function DashboardPage() {
   const dbUser = await getDbUser();
   if (!dbUser) redirect("/sign-in");
-
-  const { status, departmentId } = await searchParams;
 
   const [allRequests, allCategories, allDepartments] = await Promise.all([
     db.select().from(serviceRequests),
@@ -36,20 +28,20 @@ export default async function DashboardPage({ searchParams }: Props) {
   const categoryMap = Object.fromEntries(allCategories.map((c) => [c.id, c.name]));
   const deptMap = Object.fromEntries(allDepartments.map((d) => [d.id, d.name]));
 
-  const filtered = allRequests
-    .filter((r) => {
-      if (status && r.status !== status) return false;
-      if (departmentId && r.departmentId !== departmentId) return false;
-      if (dbUser.role === "staff" && dbUser.departmentId && r.departmentId !== dbUser.departmentId) return false;
-      return true;
-    })
+  const visibleRequests =
+    dbUser.role === "staff" && dbUser.departmentId
+      ? allRequests.filter((r) => r.departmentId === dbUser.departmentId)
+      : allRequests;
+
+  const filtered = visibleRequests
+    .slice()
     .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
   const counts = {
-    open: allRequests.filter((r) => r.status === "open").length,
-    in_progress: allRequests.filter((r) => r.status === "in_progress").length,
-    resolved: allRequests.filter((r) => r.status === "resolved").length,
-    closed: allRequests.filter((r) => r.status === "closed").length,
+    open: visibleRequests.filter((r) => r.status === "open").length,
+    in_progress: visibleRequests.filter((r) => r.status === "in_progress").length,
+    resolved: visibleRequests.filter((r) => r.status === "resolved").length,
+    closed: visibleRequests.filter((r) => r.status === "closed").length,
   };
 
   return (
@@ -74,10 +66,7 @@ export default async function DashboardPage({ searchParams }: Props) {
 
       <Card>
         <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-base">All Requests</CardTitle>
-            <DashboardFilters departments={allDepartments} currentStatus={status} currentDept={departmentId} />
-          </div>
+          <CardTitle className="text-base">All Requests</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <Table>
@@ -90,12 +79,13 @@ export default async function DashboardPage({ searchParams }: Props) {
                 <TableHead>Status</TableHead>
                 <TableHead>Priority</TableHead>
                 <TableHead>Submitted</TableHead>
+                <TableHead />
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center text-gray-400 py-8">
+                  <TableCell colSpan={8} className="text-center text-gray-400 py-8">
                     No requests found
                   </TableCell>
                 </TableRow>
@@ -124,6 +114,14 @@ export default async function DashboardPage({ searchParams }: Props) {
                   </TableCell>
                   <TableCell className="text-xs text-gray-500">
                     {r.createdAt.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                  </TableCell>
+                  <TableCell>
+                    <Link
+                      href={`/requests/${r.id}`}
+                      className="inline-flex items-center px-3 py-1 rounded-md text-xs font-medium bg-gray-900 text-white hover:bg-gray-700 transition-colors"
+                    >
+                      Manage
+                    </Link>
                   </TableCell>
                 </TableRow>
               ))}

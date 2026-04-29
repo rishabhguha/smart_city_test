@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { SignInButton, SignUpButton, useClerk } from '@clerk/nextjs';
 import { Button } from '@/components/ui/button';
-import { MapPin } from 'lucide-react';
+import { BrandMark } from '@/components/BrandMark';
 import { useEffect, useRef, useState } from 'react';
 
 interface NavBarProps {
@@ -88,9 +88,9 @@ export function NavBar({ isSignedIn, userImageUrl }: NavBarProps) {
       <div className='max-w-6xl mx-auto px-4 h-14 flex items-center justify-between'>
         <Link
           href='/'
-          className='flex items-center gap-2 font-semibold text-blue-700'
+          className='flex items-center gap-2 font-semibold text-foreground no-underline'
         >
-          <MapPin className='w-5 h-5' />
+          <BrandMark />
           Smart 311
         </Link>
 

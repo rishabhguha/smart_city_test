@@ -1,0 +1,25 @@
+.mark {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: oklch(0.18 0.01 80);
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.mark::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: oklch(0.985 0.004 85);
+  box-shadow: 0 0 0 3px color-mix(in oklch, oklch(0.55 0.14 245) 40%, transparent);
+  animation: brandPulse 2.4s ease-in-out infinite;
+}
+
+@keyframes brandPulse {
+  0%, 100% { box-shadow: 0 0 0 3px color-mix(in oklch, oklch(0.55 0.14 245) 40%, transparent); }
+  50%       { box-shadow: 0 0 0 6px color-mix(in oklch, oklch(0.55 0.14 245) 12%, transparent); }
+}
