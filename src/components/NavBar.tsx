@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { SignInButton, SignUpButton, useClerk } from '@clerk/nextjs';
 import { Button } from '@/components/ui/button';
 import { BrandMark } from '@/components/BrandMark';
@@ -65,7 +64,6 @@ function UserAvatarButton({ imageUrl }: { imageUrl: string }) {
 }
 
 export function NavBar({ isSignedIn, userImageUrl }: NavBarProps) {
-  const pathname = usePathname();
   const [role, setRole] = useState<string | null>(null);
 
   useEffect(() => {
@@ -78,10 +76,6 @@ export function NavBar({ isSignedIn, userImageUrl }: NavBarProps) {
 
   const isAdmin = isSignedIn && role === 'admin';
   const isStaff = isSignedIn && role === 'staff';
-  const onStaffPage =
-    pathname.startsWith('/dashboard') ||
-    pathname.startsWith('/requests') ||
-    pathname.startsWith('/admin');
 
   return (
     <header className='border-b bg-white sticky top-0 z-50'>
@@ -98,12 +92,14 @@ export function NavBar({ isSignedIn, userImageUrl }: NavBarProps) {
           {!isSignedIn ? (
             <>
               <SignInButton>
-                <Button variant='ghost' size='sm'>
+                <button className='cursor-pointer rounded-md px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors'>
                   Sign In
-                </Button>
+                </button>
               </SignInButton>
               <SignUpButton>
-                <Button size='sm'>Sign Up</Button>
+                <button className='cursor-pointer rounded-md px-3 py-1.5 text-sm font-medium bg-gray-900 text-white hover:bg-gray-700 transition-colors'>
+                  Sign Up
+                </button>
               </SignUpButton>
             </>
           ) : (

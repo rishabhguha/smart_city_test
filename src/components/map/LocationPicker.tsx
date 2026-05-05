@@ -15,9 +15,15 @@ export function LocationPicker({ onLocationChange, defaultLat = 41.1306, default
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const marker = useRef<mapboxgl.Marker | null>(null);
+  const onLocationChangeRef = useRef(onLocationChange);
   const [search, setSearch] = useState("");
   const [suggestions, setSuggestions] = useState<{ place_name: string; center: [number, number] }[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+
+  // Keep ref current so event handlers always call the latest callback without being deps.
+  useEffect(() => {
+    onLocationChangeRef.current = onLocationChange;
+  });
 
   useEffect(() => {
     if (map.current || !mapContainer.current) return;
@@ -42,10 +48,10 @@ export function LocationPicker({ onLocationChange, defaultLat = 41.1306, default
         );
         const data = await res.json();
         const place = data.features?.[0]?.place_name ?? `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-        onLocationChange(lat, lng, place);
+        onLocationChangeRef.current(lat, lng, place);
         setSearch(place);
       } catch {
-        onLocationChange(lat, lng, `${lat.toFixed(5)}, ${lng.toFixed(5)}`);
+        onLocationChangeRef.current(lat, lng, `${lat.toFixed(5)}, ${lng.toFixed(5)}`);
       }
     };
 
@@ -59,9 +65,15 @@ export function LocationPicker({ onLocationChange, defaultLat = 41.1306, default
       reverseGeocode(e.lngLat.lng, e.lngLat.lat);
     });
 
-    // Set initial location
     reverseGeocode(defaultLng, defaultLat);
-  }, [defaultLat, defaultLng, onLocationChange]);
+
+    return () => {
+      map.current?.remove();
+      map.current = null;
+      marker.current = null;
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSearch = useCallback(async (value: string) => {
     setSearch(value);

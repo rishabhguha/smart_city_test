@@ -8,7 +8,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { LocationPicker } from "@/components/map/LocationPicker";
+import dynamic from "next/dynamic";
+
+const LocationPicker = dynamic(
+  () => import("@/components/map/LocationPicker").then((m) => m.LocationPicker),
+  { ssr: false }
+);
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Upload, X } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
@@ -59,8 +64,11 @@ export function RequestForm() {
   const handlePhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    setPhotoPreview((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return URL.createObjectURL(file);
+    });
     setPhotoFile(file);
-    setPhotoPreview(URL.createObjectURL(file));
   };
 
   const errors = {
@@ -209,7 +217,7 @@ export function RequestForm() {
                 <button
                   type="button"
                   className="cursor-pointer absolute top-1 right-1 bg-white rounded-full p-0.5 shadow"
-                  onClick={() => { setPhotoPreview(null); setPhotoFile(null); }}
+                  onClick={() => { if (photoPreview) URL.revokeObjectURL(photoPreview); setPhotoPreview(null); setPhotoFile(null); }}
                 >
                   <X className="w-4 h-4" />
                 </button>

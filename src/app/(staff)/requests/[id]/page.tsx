@@ -8,9 +8,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { STATUS_LABELS, STATUS_COLORS, PRIORITY_LABELS, PRIORITY_COLORS } from "@/lib/status";
-import { MapPin, Building2, Tag, Clock, User } from "lucide-react";
+import { MapPin, Building2, Tag, Clock, User, ArrowLeft } from "lucide-react";
 import { getDbUser } from "@/lib/auth";
 import { StatusUpdateForm } from "./StatusUpdateForm";
+import Link from "next/link";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -39,6 +40,14 @@ export default async function RequestDetailPage({ params }: Props) {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
+      <Link
+        href="/dashboard"
+        className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 transition-colors"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Back to Dashboard
+      </Link>
+
       <div className="flex items-start justify-between">
         <div>
           <p className="text-sm text-gray-500 mb-1">Request #{id.slice(-8).toUpperCase()}</p>
